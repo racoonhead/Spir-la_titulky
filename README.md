@@ -1,6 +1,6 @@
 # Spirala — Divadelní titulkovací systém (Android / AOSP)
 
-**Spirala** je jednoúčelová platforma pro zobrazování divadelních titulků v reálném čase, postavená na upraveném systému **Android (AOSP)** a nativní klientské aplikaci v jazyce **Kotlin** pro telefony **Motorola**.
+**Spirala** je jednoúčelová platforma pro zobrazování divadelních titulků v reálném čase, postavená na upraveném systému **Android (AOSP)** a nativní klientské aplikaci v jazyce **Kotlin** pro telefony **OnePlus Nord CE 4 Lite 5G (`CPH2619` / `camry`)** (s modulární podporou pro alternativní zařízení **Motorola**).
 
 Zařízení slouží jako dedikovaný terminál zapůjčovaný divákům během představení: po zapnutí automaticky nastartuje do titulkovací aplikace v režimu celé obrazovky, uzamkne systém proti opuštění aplikace (Kiosk / Device Owner), připojí se k lokální divadelní Wi-Fi síti a přijímá řídicí pokyny (`CUE`, `BLACKOUT`, synchronizaci scénáře) z centrálního titulkovacího serveru.
 
@@ -20,7 +20,7 @@ Zařízení slouží jako dedikovaný terminál zapůjčovaný divákům během 
 - **Čistý AOSP základ bez GMS:** Žádné služby Google Play, žádné notifikace, žádné zbytečné systémové aplikace a žádná závislost na internetu.
 - **Kiosk uzamčení:** Registrace aplikace jako systémové `HOME` aktivity v kombinaci s `DevicePolicyManager` (Lock Task Mode / Device Owner).
 - **Optimalizace napájení a Wi-Fi:** Potlačení uspávání Wi-Fi adaptéru a buzení obrazovky bez nutnosti zásahu diváka.
-- **Modulární podpora zařízení Motorola:** Oddělení společné konfigurace (`device/motorola/common`) od konkrétního modelu telefonu (device tree, kernel defconfig fragmenty a proprietární vendor blobs).
+- **Cílový hardware OnePlus Nord CE 4 Lite 5G (`camry` / `CPH2619`):** 6,67" AMOLED displej s nulovým parazitním svitem na černé (`0,0 cd/m²`), čipset Qualcomm Snapdragon 695 5G (`SM6375` / `holi`), device tree v `device/oneplus/camry`, jaderný fragment `kernel/oneplus/sm6375` a vendor manifest `vendor/oneplus/camry` (plus modulární podpora pro zařízení Motorola v `device/motorola`).
 
 ---
 
@@ -29,13 +29,13 @@ Zařízení slouží jako dedikovaný terminál zapůjčovaný divákům během 
 ```text
 Spirala/
 ├── android/        # Produktová konfigurace AOSP (teatro_spirala.mk, system.prop)
-├── device/         # Device tree konfigurace pro telefony Motorola (common + šablona modelu)
-├── kernel/         # Konfigurační fragmenty Linux kernelu (wakelocky, Wi-Fi stabilita)
-├── vendor/         # Manifesty a pravidla pro proprietární binární soubory (vendor blobs)
+├── device/         # Device tree pro OnePlus Nord CE 4 Lite 5G (oneplus/camry) a šablona Motorola
+├── kernel/         # Konfigurační fragmenty Linux kernelu (oneplus/sm6375, wakelocky, Wi-Fi BBR)
+├── vendor/         # Manifesty a pravidla pro proprietární binární soubory (oneplus/camry, motorola)
 ├── protocol/       # Kotlin/JVM modul komunikačního protokolu (JSON serializace, typy zpráv)
 ├── app/            # Nativní Android titulkovací aplikace (Kotlin + Jetpack Compose)
 ├── scripts/        # PowerShell skripty pro kontrolu prostředí, build, testy a ADB instalaci
-└── docs/           # Technická dokumentace architektury a vývojového prostředí
+└── docs/           # Technická dokumentace (architektura, prostředí, cílové zařízení OnePlus, nabídka)
 ```
 
 ---
@@ -108,12 +108,14 @@ Kompilace kompletního obrazu systému Android (AOSP) a jádra Linux vyžaduje *
 - **350–450 GB** volného místa na SSD/NVMe disku,
 - Nainstalované nástroje `repo`, `git`, `fastboot`, `adb` a standardní AOSP build závislosti.
 
-Podrobnosti o nastavení prostředí jsou uvedeny v dokumentaci:
+Podrobnosti o nastavení prostředí a cílovém zařízení jsou uvedeny v dokumentaci:
+- [Cílové zařízení: OnePlus Nord CE 4 Lite 5G (`docs/device-oneplus-nord-ce4-lite.md`)](docs/device-oneplus-nord-ce4-lite.md)
 - [Architektura systému (`docs/architecture.md`)](docs/architecture.md)
 - [Vývojové prostředí (`docs/environment.md`)](docs/environment.md)
+- [Cenová nabídka a rozsah prací (`docs/nabidka.md`)](docs/nabidka.md)
 
 > **⚠️ Bezpečnostní upozornění před flashováním zařízení:**
-> Odemčení bootloaderu (`fastboot oem unlock`) a nahrávání vlastních systémových obrazů (`boot`, `system`, `vendor`, `vbmeta`) nenávratně vymaže všechna uživatelská data v telefonu. Použití obrazů určených pro jiný model nebo revizi Motoroly může vést k trvalému znefunkčnění zařízení (hard brick). Před každou operací vždy ověřte přesné kódové označení zařízení příkazem `fastboot getvar product`.
+> Odemčení bootloaderu (`fastboot flashing unlock`) a nahrávání vlastních systémových obrazů (`boot`, `system`, `vendor`, `vbmeta`) nenávratně vymaže všechna uživatelská data v telefonu. Použití obrazů určených pro jiný model nebo revizi může vést k trvalému znefunkčnění zařízení (hard brick). Před každou operací vždy ověřte přesné označení zařízení (`CPH2619` / `camry`).
 
 ---
 
@@ -122,7 +124,7 @@ Podrobnosti o nastavení prostředí jsou uvedeny v dokumentaci:
 - [x] **Etapa 1:** Kontrola prostředí, vytvoření modulární struktury projektu, datový model protokolu (`:protocol`) a první plně funkční celoobrazovková verze aplikace (`:app`) s testovacím scénářem a jednotkovými testy.
 - [ ] **Etapa 2:** WebSocket klient s automatickým reconnectem, heartbeatem, zpracováním mezer v sekvencích a lokální Room/SQLite databází scénáře pro offline provoz.
 - [ ] **Etapa 3:** Kiosk režim, Device Owner (DPC) konfigurace, správa napájení a automatické připojení k divadelní Wi-Fi.
-- [ ] **Etapa 4:** Integrace konkrétního modelu telefonu Motorola (device tree, kernel defconfig, extrakce vendor blobs, sestavení a ověření AOSP obrazu).
+- [ ] **Etapa 4:** Integrace telefonu **OnePlus Nord CE 4 Lite 5G (`camry` / `CPH2619`)** — device tree, kernel defconfig (`SM6375`), extrakce vendor blobs, sestavení a ověření AOSP obrazu.
 
 ---
 

@@ -1,0 +1,20 @@
+# Seznam proprietárních binárních souborů (vendor blobs) pro OnePlus Nord CE 4 Lite 5G (camry / CPH2619)
+# Platforma: Qualcomm Snapdragon 695 5G (SM6375 / holi / blair)
+# Tyto soubory se extrahují ze sériového firmwaru (OxygenOS / CPH2619) skriptem extract-files.sh.
+
+# Grafický čip a displej (Qualcomm Adreno 619 + 6.67" AMOLED panel)
+vendor/lib64/egl/libGLESv2_adreno.so
+vendor/lib64/egl/libEGL_adreno.so
+vendor/lib64/egl/libq3dtools_adreno.so
+vendor/firmware/a619_gmu.bin
+vendor/firmware/a630_sqe.fw
+
+# Wi-Fi a síťový subsystém (Qualcomm WCN399x / qca_cld3)
+vendor/etc/wifi/WCNSS_qcom_cfg.ini
+vendor/etc/wifi/wpa_supplicant_overlay.conf
+vendor/firmware/wlan/qca_cld/WCNSS_qcom_cfg.ini
+
+# Správa napájení, nabíjení (SuperVOOC / USB-PD) a baterie (Health AIDL HAL)
+vendor/bin/hw/android.hardware.health-service.qti
+vendor/etc/init/android.hardware.health-service.qti.rc
+
