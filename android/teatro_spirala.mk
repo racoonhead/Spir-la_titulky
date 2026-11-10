@@ -21,9 +21,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.teatro.kiosk.enabled=true \
     wifi.supplicant_scan_interval=15
 
-# Načtení konfigurace primárního cílového zařízení OnePlus Nord CE 4 Lite 5G (camry)
+# Načtení konfigurace cílového zařízení OnePlus Nord CE 4 Lite 5G (camry)
 $(call inherit-product-if-exists, device/oneplus/camry/device.mk)
-
-# Modulární fallback pro alternativní zařízení Motorola
-$(call inherit-product-if-exists, device/motorola/common/common.mk)
 

@@ -3,6 +3,7 @@ package cz.teatrosvjotlo.spirala.app.viewmodel
 import cz.teatrosvjotlo.spirala.app.model.SubtitleUiState
 import cz.teatrosvjotlo.spirala.protocol.MessageType
 import cz.teatrosvjotlo.spirala.protocol.ProtocolPacket
+import cz.teatrosvjotlo.spirala.protocol.ScriptCuePayload
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -24,7 +25,7 @@ class SubtitleViewModelTest {
     }
 
     @Test
-    fun `switching language updates current test cue translation`() {
+    fun `switching language updates current test cue translation via O(1) index`() {
         val viewModel = SubtitleViewModel()
 
         viewModel.selectLanguage("en")
@@ -79,8 +80,38 @@ class SubtitleViewModelTest {
     }
 
     @Test
-    fun `font size and brightness stay within safe theatrical bounds`() {
+    fun `SCRIPT_SYNC updates in-memory cue cache and resolves language translations`() {
         val viewModel = SubtitleViewModel()
+        viewModel.selectLanguage("en")
+
+        val scriptSyncPacket = ProtocolPacket(
+            type = MessageType.SCRIPT_SYNC,
+            showId = "show_002",
+            sequence = 300L,
+            cues = listOf(
+                ScriptCuePayload(
+                    sequence = 1L,
+                    cueId = "cue_301",
+                    translations = mapOf(
+                        "cs" to "První replika",
+                        "en" to "First line"
+                    )
+                )
+            )
+        )
+
+        assertTrue(viewModel.onProtocolPacket(scriptSyncPacket))
+        assertEquals("show_002", viewModel.uiState.value.showId)
+        assertEquals("cue_301", viewModel.uiState.value.cueId)
+        assertEquals("First line", viewModel.uiState.value.currentText)
+    }
+
+    @Test
+    fun `font size and brightness stay within safe theatrical bounds without float drift`() {
+        val viewModel = SubtitleViewModel()
+
+        viewModel.increaseBrightness()
+        assertEquals(0.45f, viewModel.uiState.value.brightness, 0.0001f)
 
         repeat(20) { viewModel.increaseFontSize() }
         assertEquals(SubtitleUiState.MAX_FONT_SIZE_SP, viewModel.uiState.value.fontSizeSp, 0.01f)
@@ -95,4 +126,3 @@ class SubtitleViewModelTest {
         assertEquals(SubtitleUiState.MAX_BRIGHTNESS, viewModel.uiState.value.brightness, 0.01f)
     }
 }
-

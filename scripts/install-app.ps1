@@ -1,4 +1,4 @@
-# Skript pro instalaci a spuštění titulkovací aplikace na připojeném telefonu Motorola přes ADB
+# Skript pro instalaci a spuštění titulkovací aplikace na připojeném telefonu OnePlus přes ADB
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $adb = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
@@ -12,12 +12,17 @@ if (-not (Test-Path $apkPath)) {
 Write-Host "=== Kontrola připojených ADB zařízení ===" -ForegroundColor Cyan
 $devices = & $adb devices | Select-String -Pattern "\tdevice$"
 if (-not $devices) {
-    Write-Error "Žádné zařízení v režimu ADB 'device' nebylo nalezeno. Připojte telefon a povolte USB ladění."
+    Write-Error "Žádné zařízení v režimu ADB 'device' nebylo nalezeno. Připojte telefon OnePlus a povolte USB ladění."
 }
 
 Write-Host "=== Instaluji APK: $apkPath ===" -ForegroundColor Cyan
 & $adb install -r $apkPath
+if ($LASTEXITCODE -ne 0) {
+    throw "Instalace APK přes ADB selhala s návratovým kódem $LASTEXITCODE."
+}
 
 Write-Host "=== Spouštím MainActivity ===" -ForegroundColor Cyan
 & $adb shell am start -n "cz.teatrosvjotlo.spirala.app/.MainActivity"
-
+if ($LASTEXITCODE -ne 0) {
+    throw "Spuštění MainActivity přes ADB selhalo s návratovým kódem $LASTEXITCODE."
+}

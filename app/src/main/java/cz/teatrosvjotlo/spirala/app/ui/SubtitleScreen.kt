@@ -29,11 +29,15 @@ import androidx.compose.ui.unit.sp
 import cz.teatrosvjotlo.spirala.app.model.ConnectionStatus
 import cz.teatrosvjotlo.spirala.app.model.SubtitleUiState
 import cz.teatrosvjotlo.spirala.app.ui.theme.TheatreColors
+import kotlin.math.roundToInt
+
+private val ControlPanelShape = RoundedCornerShape(12.dp)
+private val ChipButtonShape = RoundedCornerShape(8.dp)
 
 /**
  * Hlavní celoobrazovková komponenta pro zobrazování divadelních titulků.
  *
- * V režimu BLACKOUT je vykreslena čistě černá plocha (#000000) bez rušivého jasu.
+ * V režimu BLACKOUT je na AMOLED panelu vykreslena čistě černá plocha (#000000 -> 0.0 cd/m²).
  * Klepnutím na plochu obrazovky lze skrýt nebo zobrazit diskrétní ovládací lištu.
  */
 @Composable
@@ -65,7 +69,10 @@ fun SubtitleScreen(
         // Horní diskrétní stavový řádek (skrytý při BLACKOUTu, pokud nejsou zapnuté ovládací prvky)
         if (!uiState.isBlackout || uiState.isControlsVisible) {
             StatusHeader(
-                uiState = uiState,
+                connectionStatus = uiState.connectionStatus,
+                cueId = uiState.cueId,
+                sequence = uiState.sequence,
+                isBlackout = uiState.isBlackout,
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(horizontal = 24.dp, vertical = 14.dp)
@@ -95,7 +102,11 @@ fun SubtitleScreen(
         // Dolní ovládací lišta (jazyk, písmo, jas, testovací přepínání cue a blackoutu)
         if (uiState.isControlsVisible) {
             TheatreControlBar(
-                uiState = uiState,
+                availableLanguages = uiState.availableLanguages,
+                selectedLanguage = uiState.selectedLanguage,
+                fontSizeSp = uiState.fontSizeSp,
+                brightness = uiState.brightness,
+                isBlackout = uiState.isBlackout,
                 onSelectLanguage = onSelectLanguage,
                 onIncreaseFontSize = onIncreaseFontSize,
                 onDecreaseFontSize = onDecreaseFontSize,
@@ -114,21 +125,37 @@ fun SubtitleScreen(
 
 @Composable
 private fun StatusHeader(
-    uiState: SubtitleUiState,
+    connectionStatus: ConnectionStatus,
+    cueId: String,
+    sequence: Long,
+    isBlackout: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val dotColor = when (uiState.connectionStatus) {
+    val dotColor = when (connectionStatus) {
         ConnectionStatus.CONNECTED -> TheatreColors.StatusConnected
         ConnectionStatus.CONNECTING -> TheatreColors.StatusConnecting
         ConnectionStatus.OFFLINE_CACHE -> TheatreColors.StatusOfflineCache
         ConnectionStatus.DISCONNECTED -> TheatreColors.StatusDisconnected
     }
 
-    val statusLabel = when (uiState.connectionStatus) {
-        ConnectionStatus.CONNECTED -> "ONLINE"
-        ConnectionStatus.CONNECTING -> "PŘIPOJOVÁNÍ"
-        ConnectionStatus.OFFLINE_CACHE -> "LOKÁLNÍ SCÉNÁŘ"
-        ConnectionStatus.DISCONNECTED -> "OFFLINE"
+    val headerText = remember(connectionStatus, cueId, sequence, isBlackout) {
+        val statusLabel = when (connectionStatus) {
+            ConnectionStatus.CONNECTED -> "ONLINE"
+            ConnectionStatus.CONNECTING -> "PŘIPOJOVÁNÍ"
+            ConnectionStatus.OFFLINE_CACHE -> "LOKÁLNÍ SCÉNÁŘ"
+            ConnectionStatus.DISCONNECTED -> "OFFLINE"
+        }
+        buildString(40) {
+            append(statusLabel)
+            append(" • ")
+            append(cueId.uppercase())
+            append(" (#")
+            append(sequence)
+            append(')')
+            if (isBlackout) {
+                append(" • BLACKOUT")
+            }
+        }
     }
 
     Row(
@@ -143,17 +170,7 @@ private fun StatusHeader(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = buildString {
-                append(statusLabel)
-                append(" • ")
-                append(uiState.cueId.uppercase())
-                append(" (#")
-                append(uiState.sequence)
-                append(")")
-                if (uiState.isBlackout) {
-                    append(" • BLACKOUT")
-                }
-            },
+            text = headerText,
             color = TheatreColors.SubtitleSecondary,
             fontSize = 12.sp
         )
@@ -162,7 +179,11 @@ private fun StatusHeader(
 
 @Composable
 private fun TheatreControlBar(
-    uiState: SubtitleUiState,
+    availableLanguages: List<String>,
+    selectedLanguage: String,
+    fontSizeSp: Float,
+    brightness: Float,
+    isBlackout: Boolean,
     onSelectLanguage: (String) -> Unit,
     onIncreaseFontSize: () -> Unit,
     onDecreaseFontSize: () -> Unit,
@@ -176,9 +197,9 @@ private fun TheatreControlBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(ControlPanelShape)
             .background(TheatreColors.ControlPanelBackground)
-            .border(1.dp, TheatreColors.ControlBorder, RoundedCornerShape(12.dp))
+            .border(1.dp, TheatreColors.ControlBorder, ControlPanelShape)
             .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
         Row(
@@ -191,11 +212,10 @@ private fun TheatreControlBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                uiState.availableLanguages.forEach { lang ->
-                    val isSelected = lang == uiState.selectedLanguage
+                availableLanguages.forEach { lang ->
                     TheatreChipButton(
                         label = lang.uppercase(),
-                        isActive = isSelected,
+                        isActive = lang == selectedLanguage,
                         onClick = { onSelectLanguage(lang) }
                     )
                 }
@@ -208,7 +228,7 @@ private fun TheatreControlBar(
             ) {
                 TheatreChipButton(label = "A−", onClick = onDecreaseFontSize)
                 Text(
-                    text = "${uiState.fontSizeSp.toInt()}sp",
+                    text = "${fontSizeSp.roundToInt()}sp",
                     color = TheatreColors.ControlText,
                     fontSize = 12.sp
                 )
@@ -222,7 +242,7 @@ private fun TheatreControlBar(
             ) {
                 TheatreChipButton(label = "JAS −", onClick = onDecreaseBrightness)
                 Text(
-                    text = "${(uiState.brightness * 100).toInt()}%",
+                    text = "${(brightness * 100f).roundToInt()}%",
                     color = TheatreColors.ControlText,
                     fontSize = 12.sp
                 )
@@ -237,8 +257,8 @@ private fun TheatreControlBar(
                 TheatreChipButton(label = "◀ CUE", onClick = onPreviousTestCue)
                 TheatreChipButton(label = "CUE ▶", onClick = onNextTestCue)
                 TheatreChipButton(
-                    label = if (uiState.isBlackout) "ZOBRAZIT" else "BLACKOUT",
-                    isActive = uiState.isBlackout,
+                    label = if (isBlackout) "ZOBRAZIT" else "BLACKOUT",
+                    isActive = isBlackout,
                     onClick = onToggleBlackout
                 )
             }
@@ -257,8 +277,8 @@ private fun TheatreChipButton(
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, borderColor, RoundedCornerShape(8.dp))
+            .clip(ChipButtonShape)
+            .border(1.dp, borderColor, ChipButtonShape)
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
@@ -271,4 +291,3 @@ private fun TheatreChipButton(
         )
     }
 }
-

@@ -1,6 +1,6 @@
 # Cenová nabídka a rozsah prací — Projekt Spirala (Softwarová část terminálů)
 
-**Předmět plnění:** Kompletní softwarová část jednoúčelových divadelních titulkovacích terminálů (cílová platforma **OnePlus Nord CE 4 Lite 5G**, s modulární přenositelností na telefony Motorola) — vývoj klientské Android aplikace, komunikační vrstvy s offline cache, systémové uzamčení (Kiosk / Device Owner) a příprava vlastního operačního systému Android (AOSP) včetně konfigurace jádra (Linux kernel) a ověření funkčnosti zařízení.
+**Předmět plnění:** Kompletní softwarová část jednoúčelových divadelních titulkovacích terminálů (telefony **OnePlus Nord CE 4 Lite 5G**) — vývoj klientské Android aplikace, komunikační vrstvy s offline cache, systémové uzamčení (Kiosk / Device Owner) a příprava vlastního operačního systému Android (AOSP) včetně konfigurace jádra (Linux kernel) a ověření funkčnosti zařízení.
 
 ---
 

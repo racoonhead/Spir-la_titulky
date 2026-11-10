@@ -1,6 +1,6 @@
 # Spirala — Divadelní titulkovací systém (Android / AOSP)
 
-**Spirala** je jednoúčelová platforma pro zobrazování divadelních titulků v reálném čase, postavená na upraveném systému **Android (AOSP)** a nativní klientské aplikaci v jazyce **Kotlin** pro telefony **OnePlus Nord CE 4 Lite 5G (`CPH2619` / `camry`)** (s modulární podporou pro alternativní zařízení **Motorola**).
+**Spirala** je jednoúčelová platforma pro zobrazování divadelních titulků v reálném čase, postavená na upraveném systému **Android (AOSP)** a nativní klientské aplikaci v jazyce **Kotlin** pro telefony **OnePlus Nord CE 4 Lite 5G (`CPH2619` / `camry`)**.
 
 Zařízení slouží jako dedikovaný terminál zapůjčovaný divákům během představení: po zapnutí automaticky nastartuje do titulkovací aplikace v režimu celé obrazovky, uzamkne systém proti opuštění aplikace (Kiosk / Device Owner), připojí se k lokální divadelní Wi-Fi síti a přijímá řídicí pokyny (`CUE`, `BLACKOUT`, synchronizaci scénáře) z centrálního titulkovacího serveru.
 
@@ -20,7 +20,7 @@ Zařízení slouží jako dedikovaný terminál zapůjčovaný divákům během 
 - **Čistý AOSP základ bez GMS:** Žádné služby Google Play, žádné notifikace, žádné zbytečné systémové aplikace a žádná závislost na internetu.
 - **Kiosk uzamčení:** Registrace aplikace jako systémové `HOME` aktivity v kombinaci s `DevicePolicyManager` (Lock Task Mode / Device Owner).
 - **Optimalizace napájení a Wi-Fi:** Potlačení uspávání Wi-Fi adaptéru a buzení obrazovky bez nutnosti zásahu diváka.
-- **Cílový hardware OnePlus Nord CE 4 Lite 5G (`camry` / `CPH2619`):** 6,67" AMOLED displej s nulovým parazitním svitem na černé (`0,0 cd/m²`), čipset Qualcomm Snapdragon 695 5G (`SM6375` / `holi`), device tree v `device/oneplus/camry`, jaderný fragment `kernel/oneplus/sm6375` a vendor manifest `vendor/oneplus/camry` (plus modulární podpora pro zařízení Motorola v `device/motorola`).
+- **Cílový hardware OnePlus Nord CE 4 Lite 5G (`camry` / `CPH2619`):** 6,67" AMOLED displej s nulovým parazitním svitem na černé (`0,0 cd/m²`), čipset Qualcomm Snapdragon 695 5G (`SM6375` / `holi`), device tree v `device/oneplus/camry`, jaderný fragment `kernel/oneplus/sm6375` a vendor manifest `vendor/oneplus/camry`.
 
 ---
 
@@ -29,9 +29,9 @@ Zařízení slouží jako dedikovaný terminál zapůjčovaný divákům během 
 ```text
 Spirala/
 ├── android/        # Produktová konfigurace AOSP (teatro_spirala.mk, system.prop)
-├── device/         # Device tree pro OnePlus Nord CE 4 Lite 5G (oneplus/camry) a šablona Motorola
+├── device/         # Device tree pro OnePlus Nord CE 4 Lite 5G (oneplus/common, oneplus/camry)
 ├── kernel/         # Konfigurační fragmenty Linux kernelu (oneplus/sm6375, wakelocky, Wi-Fi BBR)
-├── vendor/         # Manifesty a pravidla pro proprietární binární soubory (oneplus/camry, motorola)
+├── vendor/         # Manifesty a pravidla pro proprietární binární soubory (oneplus/camry)
 ├── protocol/       # Kotlin/JVM modul komunikačního protokolu (JSON serializace, typy zpráv)
 ├── app/            # Nativní Android titulkovací aplikace (Kotlin + Jetpack Compose)
 ├── scripts/        # PowerShell skripty pro kontrolu prostředí, build, testy a ADB instalaci

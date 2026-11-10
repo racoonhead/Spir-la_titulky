@@ -1,6 +1,7 @@
 package cz.teatrosvjotlo.spirala.protocol
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
 
@@ -64,5 +65,39 @@ class ProtocolMessageTest {
 
         assertEquals(original, decoded)
     }
-}
 
+    @Test
+    fun `decodeOrNull returns null on malformed frames without throwing`() {
+        assertNull(ProtocolCodec.decodeOrNull(""))
+        assertNull(ProtocolCodec.decodeOrNull("   "))
+        assertNull(ProtocolCodec.decodeOrNull("{broken_json"))
+        assertNull(ProtocolCodec.decodeOrNull("""{"type":"UNKNOWN_TYPE"}"""))
+    }
+
+    @Test
+    fun `SCRIPT_SYNC payload serializes and generates matching ACK`() {
+        val syncPacket = ProtocolPacket(
+            type = MessageType.SCRIPT_SYNC,
+            showId = "show_001",
+            sequence = 300L,
+            cues = listOf(
+                ScriptCuePayload(
+                    sequence = 1L,
+                    cueId = "cue_001",
+                    translations = mapOf("cs" to "Úvod", "en" to "Intro")
+                )
+            )
+        )
+
+        val encoded = ProtocolCodec.encode(syncPacket)
+        val decoded = ProtocolCodec.decodeOrNull(encoded)
+        assertNotNull(decoded)
+        assertEquals(1, decoded?.cues?.size)
+        assertEquals("Úvod", decoded?.cues?.first()?.translations?.get("cs"))
+
+        val ack = syncPacket.toAckPacket(timestampMs = 1700000000L)
+        assertEquals(MessageType.ACK, ack.type)
+        assertEquals(300L, ack.sequence)
+        assertEquals("show_001", ack.showId)
+    }
+}
