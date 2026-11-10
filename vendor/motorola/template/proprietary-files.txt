@@ -1,0 +1,8 @@
+# Seznam proprietárních binárních souborů (vendor blobs) pro šablonu Motorola
+# Po upřesnění konkrétního modelu telefonu Motorola bude tento seznam naplněn
+# pomocí extrakčního skriptu z továrního firmware daného modelu.
+
+# Displej / GPU (Adreno / Mali)
+# Wi-Fi firmware (WCNSS / ath10k / qca_cld3)
+# Správa nabíjení a baterie (charge_only_mode / health HAL)
+

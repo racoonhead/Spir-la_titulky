@@ -1,0 +1,9 @@
+# Systémové vlastnosti pro divadelní titulkovací zařízení Spirala
+# Zakázání úvodního průvodce a notifikací
+ro.setupwizard.mode=DISABLED
+ro.config.low_ram=false
+
+# Zákaz automatického vypínání Wi-Fi při spánku (hodnota 2 = WIFI_SLEEP_POLICY_NEVER)
+settings.global.wifi_sleep_policy=2
+settings.global.stay_on_while_plugged_in=7
+
